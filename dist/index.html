@@ -188,7 +188,6 @@ kbd { font-family: var(--body); font-size: 16px; border: 1.5px solid var(--dim);
       <p>Ten chalk fighters, each with a special skill. First to win two rounds takes the match.</p>
       <div class="row">
         <button class="big p1" id="btn-1p">1 Player vs CPU</button>
-        <button class="big p2" id="btn-2p">2 Players</button>
         <button class="big" id="btn-online">Online 1 vs 1</button>
       </div>
     </div>
@@ -226,23 +225,13 @@ kbd { font-family: var(--body); font-size: 16px; border: 1.5px solid var(--dim);
 
   <div class="legend">
     <div class="card p1">
-      <h3>Player 1</h3>
+      <h3>Controls</h3>
       <dl>
-        <dt><kbd>A</kbd> <kbd>D</kbd></dt><dd>move</dd>
-        <dt><kbd>W</kbd></dt><dd>jump (press again in the air to double jump)</dd>
-        <dt><kbd>S</kbd></dt><dd>block</dd>
-        <dt><kbd>F</kbd> <kbd>G</kbd></dt><dd>punch, kick</dd>
-        <dt><kbd>H</kbd></dt><dd>skill</dd>
-      </dl>
-    </div>
-    <div class="card p2">
-      <h3>Player 2</h3>
-      <dl>
-        <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>move</dd>
-        <dt><kbd>&uarr;</kbd></dt><dd>jump (double jump too)</dd>
-        <dt><kbd>&darr;</kbd></dt><dd>block</dd>
-        <dt><kbd>K</kbd> <kbd>L</kbd></dt><dd>punch, kick</dd>
-        <dt><kbd>J</kbd></dt><dd>skill</dd>
+        <dt><kbd>A</kbd> <kbd>D</kbd> or <kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>move</dd>
+        <dt><kbd>W</kbd> or <kbd>&uarr;</kbd></dt><dd>jump (press again in the air to double jump)</dd>
+        <dt><kbd>S</kbd> or <kbd>&darr;</kbd></dt><dd>block</dd>
+        <dt><kbd>F</kbd> <kbd>G</kbd> or <kbd>K</kbd> <kbd>L</kbd></dt><dd>punch, kick</dd>
+        <dt><kbd>H</kbd> or <kbd>J</kbd></dt><dd>skill</dd>
       </dl>
     </div>
     <div class="card">
@@ -5691,11 +5680,11 @@ function makeBanner(kind, winner) {
 }
 function label(f) {
   if (mode === 'online') return f === netMe() ? 'You' : 'Opponent';
-  return f === p1 ? 'Player 1' : (mode === 'cpu' ? 'CPU' : 'Player 2');
+  return f === p1 ? 'Player 1' : 'CPU';
 }
 function shortLabel(f) {
   if (mode === 'online') return f === netMe() ? 'You' : 'Foe';
-  return f === p1 ? 'P1' : (mode === 'cpu' ? 'CPU' : 'P2');
+  return f === p1 ? 'P1' : 'CPU';
 }
 function finishMatch() {
   state = 'over';
@@ -5769,8 +5758,8 @@ function update(dt) {
     if (phaseT > 1.1 && banner?.kind !== 'fight') banner = makeBanner('fight');
     if (phaseT > 1.7) { state = 'fight'; banner = null; phaseT = 0; }
   } else if (state === 'fight') {
-    i1 = readInput(mode === '2p' ? [MAPS.p1] : [MAPS.p1, MAPS.p2]);
-    i2 = mode === 'cpu' ? aiInput(p2, p1, gdt) : mode === 'online' ? netGuestInput() : readInput([MAPS.p2]);
+    i1 = readInput([MAPS.p1, MAPS.p2]); // either key set plays
+    i2 = mode === 'online' ? netGuestInput() : aiInput(p2, p1, gdt);
     timer -= gdt;
     if (timer <= 0) {
       timer = 0;
@@ -5846,37 +5835,28 @@ function unlockLast() {
 const NAV1 = { KeyA: -1, KeyD: 1, KeyW: -5, KeyS: 5 }, NAV2 = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -5, ArrowDown: 5 };
 function selectKey(code) {
   if (code === 'Escape' || code === 'Backspace') { unlockLast(); return; }
-  if (mode === 'cpu') {
-    const w = picker();
-    if (code in NAV1) moveCursor(w, NAV1[code]);
-    else if (code in NAV2) moveCursor(w, NAV2[code]);
-    else if (code === 'KeyF' || code === 'KeyK') lockPick(w);
-  } else {
-    if (code in NAV1) moveCursor(0, NAV1[code]);
-    else if (code in NAV2) moveCursor(1, NAV2[code]);
-    else if (code === 'KeyF') lockPick(0);
-    else if (code === 'KeyK') lockPick(1);
-  }
+  const w = picker();
+  if (code in NAV1) moveCursor(w, NAV1[code]);
+  else if (code in NAV2) moveCursor(w, NAV2[code]);
+  else if (code === 'KeyF' || code === 'KeyK') lockPick(w);
 }
 function statRow(name, v) { return `<span>${name}</span><span class="bar"><i style="width:${Math.round(Math.max(0.08, Math.min(1, v)) * 100)}%"></i></span>`; }
 function renderSelect() {
   const w = picker();
-  const who2 = mode === 'cpu' ? 'CPU' : 'Player 2';
-  el('sel-title').textContent = w === 0 ? 'Player 1, pick a fighter' : w === 1 ? (mode === 'cpu' ? 'Now pick the CPU\'s fighter' : 'Player 2, pick a fighter') : 'Get ready!';
-  el('sel-hint').innerHTML = mode === 'cpu'
-    ? 'Move with <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd>, lock in with <kbd>F</kbd>, or click. <kbd>Esc</kbd> goes back.'
-    : 'P1: <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd> + <kbd>F</kbd>. P2: arrows + <kbd>K</kbd>. Or click. <kbd>Esc</kbd> goes back.';
+  const who2 = 'CPU';
+  el('sel-title').textContent = w === 0 ? 'Player 1, pick a fighter' : w === 1 ? 'Now pick the CPU\'s fighter' : 'Get ready!';
+  el('sel-hint').innerHTML = 'Move with <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd> or arrows, lock in with <kbd>F</kbd>, or click. <kbd>Esc</kbd> goes back.';
   roster.querySelectorAll('.char').forEach((b, i) => {
     b.classList.toggle('c1', sel.c[0] === i);
-    b.classList.toggle('c2', sel.c[1] === i && (sel.locked[0] || mode !== 'cpu'));
+    b.classList.toggle('c2', sel.c[1] === i && sel.locked[0]);
     b.classList.toggle('l1', sel.locked[0] && sel.c[0] === i);
     b.classList.toggle('l2', sel.locked[1] && sel.c[1] === i);
-    b.querySelector('.t2').textContent = mode === 'cpu' ? 'CPU' : 'P2';
+    b.querySelector('.t2').textContent = 'CPU';
   });
   [0, 1].forEach(k => {
     const ch = ROSTER[sel.c[k]], box = el(`pick-${k}`);
     const name = k === 0 ? 'Player 1' : who2;
-    const waiting = k === 1 && mode === 'cpu' && !sel.locked[0];
+    const waiting = k === 1 && !sel.locked[0];
     box.classList.toggle('locked', sel.locked[k]);
     box.innerHTML = waiting
       ? `<div class="who">${name}</div><h3>Waiting</h3><div class="sk">Pick Player 1 first, then choose who the CPU plays.</div>`
@@ -5952,7 +5932,6 @@ el('btn-random').onclick = () => {
 el('btn-back').onclick = toMenu;
 
 el('btn-1p').onclick = () => showSelect('cpu');
-el('btn-2p').onclick = () => showSelect('2p');
 el('btn-again').onclick = () => (mode === 'online' ? netStart() : startMatch());
 el('btn-change').onclick = () => (mode === 'online' ? netToLobby() : showSelect(mode));
 el('btn-menu').onclick = () => { if (mode === 'online') netLeave(); toMenu(); };

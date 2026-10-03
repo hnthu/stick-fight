@@ -46,11 +46,11 @@ function makeBanner(kind, winner) {
 }
 function label(f) {
   if (mode === 'online') return f === netMe() ? 'You' : 'Opponent';
-  return f === p1 ? 'Player 1' : (mode === 'cpu' ? 'CPU' : 'Player 2');
+  return f === p1 ? 'Player 1' : 'CPU';
 }
 function shortLabel(f) {
   if (mode === 'online') return f === netMe() ? 'You' : 'Foe';
-  return f === p1 ? 'P1' : (mode === 'cpu' ? 'CPU' : 'P2');
+  return f === p1 ? 'P1' : 'CPU';
 }
 function finishMatch() {
   state = 'over';
@@ -124,8 +124,8 @@ function update(dt) {
     if (phaseT > 1.1 && banner?.kind !== 'fight') banner = makeBanner('fight');
     if (phaseT > 1.7) { state = 'fight'; banner = null; phaseT = 0; }
   } else if (state === 'fight') {
-    i1 = readInput(mode === '2p' ? [MAPS.p1] : [MAPS.p1, MAPS.p2]);
-    i2 = mode === 'cpu' ? aiInput(p2, p1, gdt) : mode === 'online' ? netGuestInput() : readInput([MAPS.p2]);
+    i1 = readInput([MAPS.p1, MAPS.p2]); // either key set plays
+    i2 = mode === 'online' ? netGuestInput() : aiInput(p2, p1, gdt);
     timer -= gdt;
     if (timer <= 0) {
       timer = 0;

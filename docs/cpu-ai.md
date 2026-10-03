@@ -15,7 +15,7 @@ CPU không có luật chơi riêng. Mỗi khung hình (60 lần/giây), game l�
 
 ```js
 i1 = readInput(...);                                      // người chơi
-i2 = mode === 'cpu' ? aiInput(p2, p1, gdt) : readInput([MAPS.p2]);
+i2 = mode === 'online' ? netGuestInput() : aiInput(p2, p1, gdt);
 p1.update(gdt, i1, p2);
 p2.update(gdt, i2, p1);
 ```

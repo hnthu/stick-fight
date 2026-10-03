@@ -44,37 +44,28 @@ function unlockLast() {
 const NAV1 = { KeyA: -1, KeyD: 1, KeyW: -5, KeyS: 5 }, NAV2 = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -5, ArrowDown: 5 };
 function selectKey(code) {
   if (code === 'Escape' || code === 'Backspace') { unlockLast(); return; }
-  if (mode === 'cpu') {
-    const w = picker();
-    if (code in NAV1) moveCursor(w, NAV1[code]);
-    else if (code in NAV2) moveCursor(w, NAV2[code]);
-    else if (code === 'KeyF' || code === 'KeyK') lockPick(w);
-  } else {
-    if (code in NAV1) moveCursor(0, NAV1[code]);
-    else if (code in NAV2) moveCursor(1, NAV2[code]);
-    else if (code === 'KeyF') lockPick(0);
-    else if (code === 'KeyK') lockPick(1);
-  }
+  const w = picker();
+  if (code in NAV1) moveCursor(w, NAV1[code]);
+  else if (code in NAV2) moveCursor(w, NAV2[code]);
+  else if (code === 'KeyF' || code === 'KeyK') lockPick(w);
 }
 function statRow(name, v) { return `<span>${name}</span><span class="bar"><i style="width:${Math.round(Math.max(0.08, Math.min(1, v)) * 100)}%"></i></span>`; }
 function renderSelect() {
   const w = picker();
-  const who2 = mode === 'cpu' ? 'CPU' : 'Player 2';
-  el('sel-title').textContent = w === 0 ? 'Player 1, pick a fighter' : w === 1 ? (mode === 'cpu' ? 'Now pick the CPU\'s fighter' : 'Player 2, pick a fighter') : 'Get ready!';
-  el('sel-hint').innerHTML = mode === 'cpu'
-    ? 'Move with <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd>, lock in with <kbd>F</kbd>, or click. <kbd>Esc</kbd> goes back.'
-    : 'P1: <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd> + <kbd>F</kbd>. P2: arrows + <kbd>K</kbd>. Or click. <kbd>Esc</kbd> goes back.';
+  const who2 = 'CPU';
+  el('sel-title').textContent = w === 0 ? 'Player 1, pick a fighter' : w === 1 ? 'Now pick the CPU\'s fighter' : 'Get ready!';
+  el('sel-hint').innerHTML = 'Move with <kbd>A</kbd><kbd>D</kbd><kbd>W</kbd><kbd>S</kbd> or arrows, lock in with <kbd>F</kbd>, or click. <kbd>Esc</kbd> goes back.';
   roster.querySelectorAll('.char').forEach((b, i) => {
     b.classList.toggle('c1', sel.c[0] === i);
-    b.classList.toggle('c2', sel.c[1] === i && (sel.locked[0] || mode !== 'cpu'));
+    b.classList.toggle('c2', sel.c[1] === i && sel.locked[0]);
     b.classList.toggle('l1', sel.locked[0] && sel.c[0] === i);
     b.classList.toggle('l2', sel.locked[1] && sel.c[1] === i);
-    b.querySelector('.t2').textContent = mode === 'cpu' ? 'CPU' : 'P2';
+    b.querySelector('.t2').textContent = 'CPU';
   });
   [0, 1].forEach(k => {
     const ch = ROSTER[sel.c[k]], box = el(`pick-${k}`);
     const name = k === 0 ? 'Player 1' : who2;
-    const waiting = k === 1 && mode === 'cpu' && !sel.locked[0];
+    const waiting = k === 1 && !sel.locked[0];
     box.classList.toggle('locked', sel.locked[k]);
     box.innerHTML = waiting
       ? `<div class="who">${name}</div><h3>Waiting</h3><div class="sk">Pick Player 1 first, then choose who the CPU plays.</div>`
@@ -150,7 +141,6 @@ el('btn-random').onclick = () => {
 el('btn-back').onclick = toMenu;
 
 el('btn-1p').onclick = () => showSelect('cpu');
-el('btn-2p').onclick = () => showSelect('2p');
 el('btn-again').onclick = () => (mode === 'online' ? netStart() : startMatch());
 el('btn-change').onclick = () => (mode === 'online' ? netToLobby() : showSelect(mode));
 el('btn-menu').onclick = () => { if (mode === 'online') netLeave(); toMenu(); };
