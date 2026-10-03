@@ -1,0 +1,189 @@
+<meta charset="utf-8">
+<title>Stick Fight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="src/style.css">
+
+<div class="wrap">
+  <header>
+    <h1><span class="a">Stick</span> <span class="b">Fight</span></h1>
+    <p class="hint">Best of 3 rounds. <kbd>P</kbd> pause, <kbd>M</kbd> sound.</p>
+  </header>
+
+  <section class="select" id="select" hidden aria-label="Character select">
+    <div class="select-head">
+      <h2 id="sel-title">Choose your fighters</h2>
+      <p id="sel-hint"></p>
+    </div>
+    <div class="roster" id="roster"></div>
+    <div class="picks">
+      <div class="pick p1" id="pick-0"></div>
+      <div class="pick p2" id="pick-1"></div>
+    </div>
+    <div class="row">
+      <button class="big" id="btn-random">Random pick</button>
+      <button class="big" id="btn-back">Back</button>
+    </div>
+  </section>
+
+  <section class="select" id="arena-select" hidden aria-label="Arena select">
+    <div class="select-head">
+      <h2>Choose the arena</h2>
+      <p>Move with <kbd>A</kbd><kbd>D</kbd> or arrows, pick with <kbd>F</kbd> or <kbd>K</kbd>, or click. <kbd>Esc</kbd> goes back.</p>
+    </div>
+    <div class="arenas" id="arena-grid"></div>
+    <div class="row">
+      <button class="big" id="btn-arena-back">Back to fighters</button>
+    </div>
+  </section>
+
+  <section class="select" id="online" hidden aria-label="Online 1 vs 1">
+    <div class="select-head">
+      <h2>Online 1 vs 1</h2>
+      <p>Play a friend on another computer.</p>
+    </div>
+    <p class="on-status" id="on-status" role="status"></p>
+    <div class="on-start" id="on-start">
+      <div class="card">
+        <h3>Start a room</h3>
+        <p>You get a code to send to your friend. You play on the left.</p>
+        <button class="big p1" id="btn-host">Create room</button>
+      </div>
+      <div class="card">
+        <h3>Join a friend</h3>
+        <p>Type the 4-letter code your friend sent you.</p>
+        <div class="on-join">
+          <input id="on-code" maxlength="4" placeholder="code" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Room code">
+          <button class="big p2" id="btn-join">Join</button>
+        </div>
+      </div>
+    </div>
+    <div class="on-room" id="on-room" hidden>
+      <p class="on-code">Room code <b id="on-code-show"></b></p>
+      <div class="picks">
+        <div class="pick" id="on-me"></div>
+        <div class="pick" id="on-them"></div>
+      </div>
+      <div class="on-opts">
+        <label>Your fighter <select id="on-ch"></select></label>
+        <label id="on-arena-wrap">Arena <select id="on-arena"></select></label>
+      </div>
+    </div>
+    <div class="row">
+      <button class="big p2" id="btn-ready" hidden>Ready</button>
+      <button class="big p1" id="btn-start" hidden>Start match</button>
+      <button class="big" id="btn-on-back">Back</button>
+    </div>
+  </section>
+  <div class="stage" id="stage">
+    <canvas id="game" width="960" height="540" aria-label="Stick fight arena"></canvas>
+    <div class="overlay" id="menu">
+      <h2>Stick Fight</h2>
+      <p>Ten chalk fighters, each with a special skill. First to win two rounds takes the match.</p>
+      <div class="row">
+        <button class="big p1" id="btn-1p">1 Player vs CPU</button>
+        <button class="big p2" id="btn-2p">2 Players</button>
+        <button class="big" id="btn-online">Online 1 vs 1</button>
+      </div>
+    </div>
+    <div class="overlay" id="end" hidden>
+      <h2 id="end-title">Player 1 wins</h2>
+      <p id="end-sub"></p>
+      <div class="row">
+        <button class="big" id="btn-again">Rematch</button>
+        <button class="big" id="btn-change">Change fighters</button>
+        <button class="big" id="btn-menu">Menu</button>
+      </div>
+    </div>
+    <div class="overlay" id="pause" hidden>
+      <h2>Paused</h2>
+      <div class="row">
+        <button class="big" id="btn-resume">Resume</button>
+        <button class="big" id="btn-quit">Quit to menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="touch" id="touch" aria-label="Touch controls for player 1">
+    <div class="pad">
+      <button data-k="KeyA" aria-label="Move left">&#9664;</button>
+      <button data-k="KeyD" aria-label="Move right">&#9654;</button>
+      <button data-k="KeyS" aria-label="Block">B</button>
+    </div>
+    <div class="pad">
+      <button data-k="KeyW" aria-label="Jump">&#9650;</button>
+      <button data-k="KeyF" aria-label="Punch">P</button>
+      <button data-k="KeyG" aria-label="Kick">K</button>
+      <button data-k="KeyH" class="skill" aria-label="Skill">S</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="card p1">
+      <h3>Player 1</h3>
+      <dl>
+        <dt><kbd>A</kbd> <kbd>D</kbd></dt><dd>move</dd>
+        <dt><kbd>W</kbd></dt><dd>jump (press again in the air to double jump)</dd>
+        <dt><kbd>S</kbd></dt><dd>block</dd>
+        <dt><kbd>F</kbd> <kbd>G</kbd></dt><dd>punch, kick</dd>
+        <dt><kbd>H</kbd></dt><dd>skill</dd>
+      </dl>
+    </div>
+    <div class="card p2">
+      <h3>Player 2</h3>
+      <dl>
+        <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>move</dd>
+        <dt><kbd>&uarr;</kbd></dt><dd>jump (double jump too)</dd>
+        <dt><kbd>&darr;</kbd></dt><dd>block</dd>
+        <dt><kbd>K</kbd> <kbd>L</kbd></dt><dd>punch, kick</dd>
+        <dt><kbd>J</kbd></dt><dd>skill</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>How it plays</h3>
+      <dl>
+        <dt>Punch</dt><dd>7 damage, fast</dd>
+        <dt>Kick</dt><dd>11 damage, longer reach, slower</dd>
+        <dt>Skill</dt><dd>each fighter's special; the gold meter under health shows when it is ready</dd>
+        <dt>Block</dt><dd>cuts damage to 15% if you face the hit</dd>
+        <dt>Timer</dt><dd>60s; more health wins at time out</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>window.STICK_ARENAS = window.STICK_ARENAS || [];</script>
+<script src="arenas/arena01.js" onerror="this.remove()"></script>
+<script src="arenas/arena02.js" onerror="this.remove()"></script>
+<script src="arenas/arena03.js" onerror="this.remove()"></script>
+<script src="arenas/arena04.js" onerror="this.remove()"></script>
+<script src="arenas/arena05.js" onerror="this.remove()"></script>
+<script src="arenas/arena06.js" onerror="this.remove()"></script>
+<script src="arenas/arena07.js" onerror="this.remove()"></script>
+<script src="arenas/arena08.js" onerror="this.remove()"></script>
+<script src="arenas/arena09.js" onerror="this.remove()"></script>
+<script src="arenas/arena10.js" onerror="this.remove()"></script>
+<!-- game modules, in load order (see src/modules.txt) -->
+<script src="src/core.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/input.js"></script>
+<script src="characters/rook.js"></script>
+<script src="characters/kage.js"></script>
+<script src="characters/ember.js"></script>
+<script src="characters/frost.js"></script>
+<script src="characters/volt.js"></script>
+<script src="characters/bulwark.js"></script>
+<script src="characters/sage.js"></script>
+<script src="characters/nyx.js"></script>
+<script src="characters/zip.js"></script>
+<script src="characters/hawk.js"></script>
+<script src="src/fighter.js"></script>
+<script src="src/combat.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/arena.js"></script>
+<script src="src/render.js"></script>
+<script src="src/game.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/net.js"></script>
+<script src="src/main.js"></script>

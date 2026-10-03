@@ -1,0 +1,23 @@
+# Load order for build.py and index.html. One path per line.
+src/core.js
+src/audio.js
+src/input.js
+characters/rook.js
+characters/kage.js
+characters/ember.js
+characters/frost.js
+characters/volt.js
+characters/bulwark.js
+characters/sage.js
+characters/nyx.js
+characters/zip.js
+characters/hawk.js
+src/fighter.js
+src/combat.js
+src/ai.js
+src/arena.js
+src/render.js
+src/game.js
+src/ui.js
+src/net.js
+src/main.js
